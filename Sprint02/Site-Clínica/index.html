@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EasyClinic — Início</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#69707a;
+      --accent:#4f46e5;
+      --accent-2:#06b6d4;
+      --success:#16a34a;
+      --shadow: 0 6px 18px rgba(16,24,40,0.08);
+      --radius:12px;
+      --glass: rgba(255,255,255,0.6);
+      --max-width:1200px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:#0f172a}
+    .app{display:flex;min-height:100vh}
+
+    .sidebar{width:260px;background:linear-gradient(180deg,#ffffff, #fbfdff);border-right:1px solid #e6eef6;padding:28px;display:flex;flex-direction:column;gap:18px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;color: #0f172a;text-decoration:none;font-weight:600}
+    .nav a:hover{background:#f1f5f9}
+    .nav .active{background:linear-gradient(90deg, rgba(79,70,229,0.12), rgba(6,182,212,0.06));box-shadow:var(--shadow)}
+    .sidebar-footer{margin-top:auto;font-size:12px;color:var(--muted)}
+
+    .main{flex:1;display:flex;flex-direction:column}
+    header{height:72px;background:transparent;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(15,23,42,0.04);}
+    .search{display:flex;align-items:center;gap:12px}
+    .search input{padding:10px 12px;border-radius:10px;border:1px solid #e6eef6;background:#fff;min-width:260px}
+    .controls{display:flex;align-items:center;gap:12px}
+    .avatar{width:40px;height:40px;border-radius:999px;background:#c7d2fe;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1e293b}
+
+    .content{padding:28px;max-width:var(--max-width);margin:0 auto;width:100%}
+    .row{display:flex;gap:18px}
+
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:18px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow);min-height:88px}
+    .card .label{font-size:13px;color:var(--muted);margin-bottom:8px}
+    .card .value{font-size:20px;font-weight:700}
+
+    .panel{display:flex;gap:18px}
+    .panel-left{flex:2;background:transparent}
+    .panel-right{flex:1}
+
+    .box{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow);}
+    .box h3{margin:0 0 12px 0;font-size:16px}
+
+    .activities{display:flex;flex-direction:column;gap:10px}
+    .act{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg, #fff,#fbfdff);border:1px solid #eef3fb}
+    .act-left{display:flex;flex-direction:column}
+    .act-time{font-size:12px;color:var(--muted)}
+
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #f3f6fb}
+
+    .btn{padding:8px 12px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">EC</div>
+        <div>
+          <div>EasyClinic</div>
+          <div class="small muted">Painel Administrativo</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html" class="active">🏠 Início</a>
+        <a href="cadastrar-paciente.html">😷 Pacientes</a>
+        <a href="agendar-consulta.html">📋 Consultas</a>
+        <a href="agenda-medica.html">📅 Agenda Médica</a>
+        <a href="gerenciar-usuarios.html">👤 Usuários</a>
+        <a href="#">📊 Relatórios</a>
+        <a href="#">⚙️ Configurações</a>
+      </nav>
+
+      <div class="sidebar-footer">Versão 1.0 — Equipe ADS</div>
+    </aside>
+
+    <div class="main">
+      <header>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn" style="background:transparent;border:1px solid #e6eef6;color:#0f172a">☰</button>
+          <div class="search"><input placeholder="Buscar pacientes ou consultas..." /></div>
+        </div>
+        
+
+        <div class="controls">
+          <button class="btn" style="background:transparent;border:1px solid #e6eef6">🔔</button>
+          <div style="text-align:right">
+            <div class="small muted">Olá,</div>
+            <div style="font-weight:700">Maria Silva</div>
+          </div>
+          <div class="avatar">MS</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="cards">
+          <div class="card"><div class="label">Consultas do Dia</div><div class="value">32</div></div>
+          <div class="card"><div class="label">Pacientes Cadastrados</div><div class="value">680</div></div>
+          <div class="card"><div class="label">Médicos Ativos</div><div class="value">12</div></div>
+          <div class="card"><div class="label">Cancelamentos</div><div class="value">3</div></div>
+        </div>
+
+        <div class="panel">
+          <section class="panel-left">
+            <div class="box">
+              <h3>Consultas por Semana</h3>
+              <div id="chart" style="width:100%;height:200px"></div>
+            </div>
+
+            <div class="box" style="margin-top:18px">
+              <h3>Próximas Consultas</h3>
+              <table>
+                <thead>
+                  <tr><th>Horário</th><th>Paciente</th><th>Médico</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>09:00</td><td>João Pereira</td><td>Dr. Paula</td><td>Confirmada</td></tr>
+                  <tr><td>09:30</td><td>Maria Souza</td><td>Dr. Paulo</td><td>Confirmada</td></tr>
+                  <tr><td>10:00</td><td>Carlos Lima</td><td>Dr. Ana</td><td>Check-in</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="panel-right">
+            <div class="box">
+              <h3>Atividades Recentes</h3>
+              <div class="activities">
+                <div class="act"><div class="act-left"><strong>Consulta marcada</strong><div class="act-time">João - 14:00</div></div><div class="small muted">Recepção</div></div>
+                <div class="act"><div class="act-left"><strong>Novo paciente</strong><div class="act-time">Maria Souza</div></div><div class="small muted">Recepção</div></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+<script src="https://static.app/js/static.js" type="text/javascript"></script>
+</body>
+</html>

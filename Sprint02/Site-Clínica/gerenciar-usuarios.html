@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EasyClinic — Gerenciar Usuários</title>
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#69707a;
+      --accent:#4f46e5;
+      --accent-2:#06b6d4;
+      --success:#16a34a;
+      --warning:#eab308;
+      --danger:#dc2626;
+      --shadow:0 6px 18px rgba(16,24,40,0.08);
+      font-family:Inter, system-ui, -apple-system;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:#0f172a}
+    .app{display:flex;min-height:100vh}
+
+    /* Sidebar */
+    .sidebar{
+      width:260px;background:#fff;border-right:1px solid #e6eef6;
+      padding:28px;display:flex;flex-direction:column;gap:18px
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+    .logo{
+      width:44px;height:44px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:white;display:flex;align-items:center;justify-content:center
+    }
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .nav a{
+      display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;
+      text-decoration:none;color:#0f172a;font-weight:600
+    }
+    .nav a:hover{background:#f1f5f9}
+    .nav .active{
+      background:linear-gradient(90deg, rgba(79,70,229,0.12), rgba(6,182,212,0.06));
+      box-shadow:var(--shadow)
+    }
+    .sidebar-footer{margin-top:auto;font-size:12px;color:var(--muted)}
+
+    /* HEADER */
+    .main{flex:1;display:flex;flex-direction:column}
+    header{
+      height:72px;display:flex;align-items:center;justify-content:space-between;
+      padding:16px 28px;border-bottom:1px solid rgba(15,23,42,0.04);
+    }
+    .search input{
+      padding:10px 12px;border-radius:10px;border:1px solid #e6eef6;
+      background:#fff;min-width:260px
+    }
+    .btn{
+      padding:10px 14px;border-radius:10px;border:0;
+      background:var(--accent);color:white;cursor:pointer;font-weight:700
+    }
+
+    /* CONTENT */
+    .content{
+      padding:28px;max-width:1100px;margin:0 auto;width:100%
+    }
+
+    h2{margin:0 0 18px 0;font-size:22px}
+
+    .user-card{
+      background:var(--card);padding:24px;border-radius:12px;
+      box-shadow:var(--shadow);margin-bottom:22px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+    }
+    @media(max-width:800px){
+      .form-grid{grid-template-columns:1fr}
+    }
+
+    label{font-weight:600;margin-bottom:6px;display:block}
+    input,select{
+      padding:12px;border-radius:10px;border:1px solid #e6eef6;
+      width:100%;background:white;
+    }
+
+    table{
+      width:100%;border-collapse:collapse;margin-top:20px;
+      background:white;border-radius:12px;overflow:hidden;
+      box-shadow:var(--shadow)
+    }
+    th,td{
+      padding:14px;border-bottom:1px solid #eef3fb;text-align:left
+    }
+    th{background:#f1f5f9;font-weight:700}
+    tr:last-child td{border-bottom:0}
+
+    .actions button{
+      padding:6px 10px;border-radius:8px;border:0;cursor:pointer;font-weight:600
+    }
+    .edit{background:var(--warning);color:white}
+    .delete{background:var(--danger);color:white}
+
+    .success-box{
+      display:none;padding:14px;margin-top:12px;border-radius:10px;
+      background:#d1fae5;color:#065f46;font-weight:600;
+      border:1px solid #a7f3d0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="logo">EC</div>
+      <div>
+        <div>EasyClinic</div>
+        <div class="small muted">Painel Administrativo</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="index.html">🏠 Início</a>
+      <a href="cadastrar-paciente.html">😷 Pacientes</a>
+      <a href="agendar-consulta.html">📋 Consultas</a>
+      <a href="agenda-medica.html">📅 Agenda Médica</a>
+      <a class="active" href="gerenciar-usuarios.html">👤 Usuários</a>
+      <a href="#">📊 Relatórios</a>
+      <a href="#">⚙️ Configurações</a>
+    </nav>
+
+    <div class="sidebar-footer">Versão 1.0 — Equipe ADS</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <header>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn" style="background:transparent;border:1px solid #e6eef6;color:#0f172a">☰</button>
+        <div class="search">
+          <input placeholder="Buscar usuário..." />
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn" style="background:transparent;border:1px solid #e6eef6;color:#0f172a">🔔</button>
+        <div style="text-align:right">
+          <div class="small muted">Olá,</div>
+          <strong>Maria Silva</strong>
+        </div>
+        <div class="avatar" style="width:40px;height:40px;border-radius:50%;background:#c7d2fe;display:flex;align-items:center;justify-content:center;font-weight:700">MS</div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <h2>Gerenciar Usuários</h2>
+      <p>Crie, edite e exclua usuários internos do sistema.</p>
+
+      <!-- FORM CARD -->
+      <div class="user-card">
+
+        <h3 style="margin-top:0">Cadastrar Novo Usuário</h3>
+
+        <div class="form-grid">
+
+          <div>
+            <label>Nome Completo</label>
+            <input id="nomeUsuario" type="text" placeholder="Ex.: Ana Paula">
+          </div>
+
+          <div>
+            <label>E-mail</label>
+            <input id="emailUsuario" type="email" placeholder="Ex.: ana@email.com">
+          </div>
+
+          <div>
+            <label>Função</label>
+            <select id="funcaoUsuario">
+              <option value="">Selecione...</option>
+              <option>Administrador</option>
+              <option>Recepcionista</option>
+              <option>Médico</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Senha</label>
+            <input id="senhaUsuario" type="password" placeholder="Digite uma senha">
+          </div>
+
+        </div>
+
+        <button class="btn" onclick="salvarUsuario()" style="margin-top:18px">Salvar Usuário</button>
+
+        <div id="msgSucesso" class="success-box">Usuário cadastrado com sucesso!</div>
+
+      </div>
+
+      <!-- USERS TABLE -->
+      <h3>Usuários Cadastrados</h3>
+
+      <table id="tabelaUsuarios">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Função</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Ana Paula</td>
+            <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="30515e517055514349535c595e59531e535f5d">[email&#160;protected]</a></td>
+            <td>Recepcionista</td>
+            <td class="actions">
+              <button class="edit" onclick="editarUsuario(this)">Editar</button>
+              <button class="delete" onclick="excluirUsuario(this)">Excluir</button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Dr. Roberto</td>
+            <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="35475a575047415a755054464c56595c5b5c561b565a58">[email&#160;protected]</a></td>
+            <td>Médico</td>
+            <td class="actions">
+              <button class="edit" onclick="editarUsuario(this)">Editar</button>
+              <button class="delete" onclick="excluirUsuario(this)">Excluir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </main>
+
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function salvarUsuario(){
+  const nome = document.getElementById("nomeUsuario").value;
+  const email = document.getElementById("emailUsuario").value;
+  const funcao = document.getElementById("funcaoUsuario").value;
+  const senha = document.getElementById("senhaUsuario").value;
+
+  if(!nome || !email || !funcao || !senha){
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  const tabela = document.getElementById("tabelaUsuarios").querySelector("tbody");
+
+  const linha = document.createElement("tr");
+  linha.innerHTML = `
+    <td>${nome}</td>
+    <td>${email}</td>
+    <td>${funcao}</td>
+    <td class="actions">
+      <button class="edit" onclick="editarUsuario(this)">Editar</button>
+      <button class="delete" onclick="excluirUsuario(this)">Excluir</button>
+    </td>
+  `;
+
+  tabela.appendChild(linha);
+
+  document.getElementById("msgSucesso").style.display = "block";
+
+  document.getElementById("nomeUsuario").value = "";
+  document.getElementById("emailUsuario").value = "";
+  document.getElementById("funcaoUsuario").value = "";
+  document.getElementById("senhaUsuario").value = "";
+}
+
+function excluirUsuario(btn){
+  if(confirm("Deseja excluir este usuário?")){
+    btn.parentElement.parentElement.remove();
+  }
+}
+
+function editarUsuario(btn){
+  alert("Função de edição pode ser implementada aqui 😉");
+}
+</script>
+
+
+<script src="https://static.app/js/static.js" type="text/javascript"></script>
+</body>
+</html>
+
+<script>
+
+// --- VALIDAÇÃO DE CPF ---
+function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, "");
+    if (cpf.length !== 11) return false;
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+    let soma = 0, resto;
+
+    for (let i = 1; i <= 9; i++)
+        soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+    soma = 0;
+    for (let i = 1; i <= 10; i++)
+        soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+
+    return resto === parseInt(cpf.substring(10, 11));
+}
+
+
+// --- LOCALSTORAGE ---
+function salvarNoLocalStorage(paciente) {
+    let pacientes = JSON.parse(localStorage.getItem("pacientes")) || [];
+    pacientes.push(paciente);
+    localStorage.setItem("pacientes", JSON.stringify(pacientes));
+}
+
+function carregarPacientes() {
+    let pacientes = JSON.parse(localStorage.getItem("pacientes")) || [];
+    const tabela = document.getElementById("tabelapaciente").querySelector("tbody");
+    tabela.innerHTML = "";
+
+    pacientes.forEach(p => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+            <td>${p.nome}</td>
+            <td>${p.cpf}</td>
+            <td>${p.telefone}</td>
+            <td class="actions">
+              <button class="edit" onclick="editarUsuario(this)">Editar</button>
+              <button class="delete" onclick="excluirUsuario(this)">Excluir</button>
+            </td>
+        `;
+        tabela.appendChild(linha);
+    });
+}
+
+
+// --- SALVAR PACIENTE ---
+function salvarPaciente() {
+  const nome = document.getElementById("nome").value;
+  const cpf = document.getElementById("cpf").value;
+  const telefone = document.getElementById("telefone").value;
+  const endereco = document.getElementById("endereco").value;
+
+  if (!nome || !cpf || !telefone || !endereco) {
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  if (!validarCPF(cpf)) {
+    alert("CPF inválido!");
+    return;
+  }
+
+  const paciente = { nome, cpf, telefone, endereco };
+  salvarNoLocalStorage(paciente);
+
+  carregarPacientes();
+
+  document.getElementById("msgSucesso").style.display = "block";
+
+  document.getElementById("nome").value = "";
+  document.getElementById("cpf").value = "";
+  document.getElementById("telefone").value = "";
+  document.getElementById("endereco").value = "";
+}
+
+
+// --- EXCLUIR ---
+function excluirUsuario(btn){
+  if(confirm("Deseja excluir este paciente?")){
+
+      const cpfExcluir = btn.parentElement.parentElement.children[1].innerText;
+
+      let pacientes = JSON.parse(localStorage.getItem("pacientes")) || [];
+      pacientes = pacientes.filter(p => p.cpf !== cpfExcluir);
+      localStorage.setItem("pacientes", JSON.stringify(pacientes));
+
+      btn.parentElement.parentElement.remove();
+  }
+}
+
+
+// --- EDITAR (placeholder) ---
+function editarUsuario(btn){
+  alert("Função de edição será implementada 😉");
+}
+
+
+// --- CARREGA AO ABRIR ---
+window.onload = carregarPacientes;
+
+</script>

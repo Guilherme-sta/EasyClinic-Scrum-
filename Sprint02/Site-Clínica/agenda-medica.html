@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EasyClinic — Agenda Médica</title>
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#69707a;
+      --accent:#4f46e5;
+      --accent-2:#06b6d4;
+      --success:#16a34a;
+      --warning:#eab308;
+      --danger:#dc2626;
+      --free:#0284c7;
+      --shadow: 0 6px 18px rgba(16,24,40,0.08);
+      --radius:12px;
+      font-family: Inter, system-ui, -apple-system;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:#0f172a}
+    .app{display:flex;min-height:100vh}
+
+    /* --- Sidebar --- */
+    .sidebar{width:260px;background:#fff;border-right:1px solid #e6eef6;padding:28px;display:flex;flex-direction:column;gap:18px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;display:flex;align-items:center;justify-content:center}
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;text-decoration:none;color:#0f172a;font-weight:600}
+    .nav a:hover{background:#f1f5f9}
+    .nav .active{background:linear-gradient(90deg, rgba(79,70,229,0.12), rgba(6,182,212,0.06));box-shadow:var(--shadow)}
+    .sidebar-footer{margin-top:auto;font-size:12px;color:var(--muted)}
+
+    /* --- Header --- */
+    .main{flex:1;display:flex;flex-direction:column}
+    header{height:72px;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(15,23,42,0.04);}
+    .search input{padding:10px 12px;border-radius:10px;border:1px solid #e6eef6;background:#fff;min-width:260px}
+    .btn{padding:8px 12px;border-radius:10px;border:0;background:var(--accent);color:white;cursor:pointer;font-weight:700}
+
+    /* --- Content --- */
+    .content{padding:28px;max-width:1200px;margin:0 auto;width:100%}
+
+    h2{margin:0 0 18px 0;font-size:22px}
+
+    .agenda-container{background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow)}
+
+    .agenda-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 12px;
+      border-bottom:1px solid #eef3fb;
+      border-radius:8px;
+    }
+
+    .agenda-row:last-child{
+      border-bottom:0;
+    }
+
+    .status{
+      padding:6px 10px;
+      border-radius:8px;
+      font-size:13px;
+      font-weight:600;
+      color:white;
+    }
+    .confirmada{background:var(--success)}
+    .aguardando{background:var(--warning)}
+    .cancelada{background:var(--danger)}
+    .livre{background:var(--free)}
+    .finalizada{background:#6b7280}
+
+    .date-selector{
+      display:flex;
+      gap:12px;
+      margin-bottom:18px;
+      align-items:center;
+    }
+
+    .date-selector input{
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #e6eef6;
+      background:white;
+    }
+
+    @media (max-width:800px){
+      .agenda-row{flex-direction:column;align-items:flex-start;gap:8px}
+      .search input{min-width:140px}
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">EC</div>
+      <div>
+        <div>EasyClinic</div>
+        <div class="small muted">Painel Administrativo</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="index.html">🏠 Início</a>
+      <a href="cadastrar-paciente.html">😷 Pacientes</a>
+      <a href="agendar-consulta.html">📋 Consultas</a>
+      <a class="active" href="agenda-medica.html">📅 Agenda Médica</a>
+      <a href="gerenciar-usuarios.html">👤 Usuários</a>
+      <a href="#">📊 Relatórios</a>
+      <a href="#">⚙️ Configurações</a>
+    </nav>
+
+    <div class="sidebar-footer">Versão 1.0 — Equipe ADS</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn" style="background:transparent;border:1px solid #e6eef6;color:#0f172a">☰</button>
+        <div class="search">
+          <input placeholder="Buscar paciente..." />
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn" style="background:transparent;border:1px solid #e6eef6;color:#0f172a">🔔</button>
+        <div style="text-align:right">
+          <div class="small muted">Olá,</div>
+          <strong>Maria Silva</strong>
+        </div>
+        <div class="avatar" style="width:40px;height:40px;border-radius:50%;background:#c7d2fe;display:flex;align-items:center;justify-content:center;font-weight:700">MS</div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <h2>Agenda Médica — Hoje</h2>
+
+      <div class="date-selector">
+        <label for="data">Data:</label>
+        <input type="date" id="data" value="2025-11-25">
+        <button class="btn" style="background:var(--accent)">Hoje</button>
+      </div>
+
+      <div class="agenda-container">
+
+        <div class="agenda-row">
+          <strong>08:00</strong>
+          <span>João Silva</span>
+          <span class="status confirmada">Confirmada</span>
+        </div>
+
+        <div class="agenda-row">
+          <strong>09:00</strong>
+          <span>Maria Oliveira</span>
+          <span class="status aguardando">Aguardando</span>
+        </div>
+
+        <div class="agenda-row">
+          <strong>10:00</strong>
+          <span>Carlos Pereira</span>
+          <span class="status finalizada">Finalizada</span>
+        </div>
+
+        <div class="agenda-row">
+          <strong>11:00</strong>
+          <span>—</span>
+          <span class="status livre">Livre</span>
+        </div>
+
+        <div class="agenda-row">
+          <strong>14:00</strong>
+          <span>Beatriz Lima</span>
+          <span class="status confirmada">Confirmada</span>
+        </div>
+
+        <div class="agenda-row">
+          <strong>15:00</strong>
+          <span>—</span>
+          <span class="status livre">Livre</span>
+        </div>
+
+        <div class="agenda-row">
+          <strong>16:00</strong>
+          <span>Pedro Gomes</span>
+          <span class="status cancelada">Cancelada</span>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<script src="https://static.app/js/static.js" type="text/javascript"></script>
+</body>
+</html>
