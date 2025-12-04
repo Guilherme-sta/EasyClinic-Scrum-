@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EasyClinic — Login</title>
+<style>
+:root{
+  --bg:#f6f8fb;--card:#ffffff;--muted:#69707a;--accent:#4f46e5;--accent-hover:#4338ca;
+  --shadow:0 6px 18px rgba(16,24,40,0.08);--radius:12px;
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+body,html{margin:0;height:100%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+
+.login-card{
+  background:var(--card);width:100%;max-width:400px;padding:32px;
+  border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;
+}
+.logo{
+  width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#06b6d4);
+  color:white;font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px auto;
+}
+h1{font-size:24px;margin:0 0 8px 0;color:#0f172a}
+p{color:var(--muted);margin:0 0 24px 0;font-size:14px}
+
+.form-group{text-align:left;margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:6px}
+input{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid #dce3ed;
+  font-size:14px;outline:none;transition:0.2s;
+}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+
+button{
+  width:100%;padding:12px;border:0;border-radius:8px;background:var(--accent);
+  color:white;font-weight:700;cursor:pointer;font-size:14px;transition:0.2s;margin-top:8px;
+}
+button:hover{background:var(--accent-hover)}
+
+.error-msg{
+  color:#dc2626;font-size:13px;margin-top:12px;display:none;
+}
+.demo-info{
+  margin-top:24px;padding:12px;background:#f8fafc;border-radius:8px;
+  font-size:12px;color:var(--muted);line-height:1.5;
+}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="logo">EC</div>
+  <h1>Bem-vindo de volta</h1>
+  <p>Insira suas credenciais para acessar o painel.</p>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="email" placeholder="ex: admin@easy.com" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="senha" placeholder="••••••••" required>
+    </div>
+
+    <button type="submit">Entrar no Sistema</button>
+    <div id="msgErro" class="error-msg">E-mail ou senha incorretos.</div>
+  </form>
+
+  <div class="demo-info">
+    <strong>Acesso Inicial (Demo):</strong><br>
+    Email: <code>admin@admin.com</code><br>
+    Senha: <code>123</code>
+  </div>
+</div>
+
+<script>
+/* INICIALIZA BANCO DE DADOS SE ESTIVER VAZIO */
+(function initDB(){
+  const db = localStorage.getItem('db_usuarios');
+  if(!db){
+    const adminDefault = [
+      {nome:"Administrador", email:"admin@admin.com", cpf:"000.000.000-00", senha:"123", tipo:"Administrador", status:"Ativo"}
+    ];
+    localStorage.setItem('db_usuarios', JSON.stringify(adminDefault));
+    console.log("Banco de dados inicializado com usuário admin.");
+  }
+})();
+
+/* LÓGICA DE LOGIN */
+const form = document.getElementById('loginForm');
+const msgErro = document.getElementById('msgErro');
+
+form.onsubmit = (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+
+  const usuarios = JSON.parse(localStorage.getItem('db_usuarios') || "[]");
+
+  const user = usuarios.find(u => u.email === email && u.senha === senha);
+
+  if(user){
+    if(user.status !== "Ativo"){
+      msgErro.textContent = "Usuário inativo. Contate o administrador.";
+      msgErro.style.display = "block";
+      return;
+    }
+    // Salva sessão
+    localStorage.setItem('usuario_logado', JSON.stringify(user));
+    window.location.href = "index.html";
+  } else {
+    msgErro.textContent = "E-mail ou senha incorretos.";
+    msgErro.style.display = "block";
+  }
+};
+
+/* SE JÁ LOGADO, REDIRECIONA */
+if(localStorage.getItem('usuario_logado')){
+  window.location.href = "index.html";
+}
+</script>
+</body>
+</html>
