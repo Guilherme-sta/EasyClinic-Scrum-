@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EasyClinic — Pacientes</title>
+<script>
+  const usuarioLogado = localStorage.getItem('usuario_logado');
+  if (!usuarioLogado) {
+    window.location.href = "login.html";
+  }
+</script>
+
+<style>
+/* ====== BASE ====== */
+:root{
+  --bg:#f6f8fb; --card:#ffffff; --muted:#69707a;
+  --accent:#4f46e5; --accent-2:#06b6d4;
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px; --max-width:1200px;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:#0f172a}
+.app{display:flex;min-height:100vh}
+
+/* ====== SIDEBAR ====== */
+/* ====== SIDEBAR (igual ao Consultas) ====== */
+.sidebar{
+  width:260px;background:white;border-right:1px solid #e6eef6;
+  padding:20px;display:flex;flex-direction:column;gap:14px;
+  transition:.25s ease;
+}
+.sidebar.collapsed{
+  width:72px;
+  padding-left:10px;
+  padding-right:10px;
+}
+
+.logo{
+  width:44px;height:44px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:white;font-weight:700;display:flex;
+  align-items:center;justify-content:center;
+}
+
+.brand{display:flex;gap:12px;align-items:center;font-weight:700}
+.titles{display:flex;flex-direction:column}
+.small{font-size:12px;color:var(--muted)}
+
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:10px;
+}
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px;
+  border-radius:10px;
+  font-weight:600;
+  text-decoration:none;
+  color:#0f172a;
+}
+.nav a:hover{background:#f1f5f9}
+.nav .active{
+  background:linear-gradient(90deg,rgba(79,70,229,0.12),rgba(6,182,212,0.06));
+  box-shadow:var(--shadow);
+}
+
+.sidebar.collapsed .titles,
+.sidebar.collapsed .text,
+.sidebar.collapsed .sidebar-footer{
+  display:none;
+}
+.sidebar.collapsed .logo{margin:auto}
+
+.sidebar-footer{
+  margin-top:auto;
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+}
+
+
+/* ====== HEADER ====== */
+.main{flex:1;display:flex;flex-direction:column}
+header{
+  height:72px;padding:16px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(0,0,0,0.05);
+  position:relative;
+}
+.icon-btn{
+  width:40px;height:40px;border-radius:10px;background:white;
+  border:1px solid #e6eef6;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:18px;
+}
+.icon-btn:hover{background:#eef2ff}
+.search input{
+  padding:10px 12px;border-radius:10px;
+  border:1px solid #e6eef6;background:white;min-width:260px;
+}
+.avatar{
+  width:40px;height:40px;border-radius:999px;background:#c7d2fe;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#1e293b;cursor:pointer
+}
+
+/* ====== NOTIF POPUP ====== */
+.notif-popup{
+  position:absolute;top:74px;right:28px;width:300px;
+  background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+  padding:12px;display:none;z-index:99;
+}
+.notif-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px;border:1px solid #eef3fb;margin-bottom:8px;
+  border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);
+}
+.meta{font-size:12px;color:var(--muted)}
+
+/* ====== CONTENT ====== */
+.content{padding:28px;max-width:var(--max-width);margin:0 auto}
+
+
+/* ====== PATIENT TABLE ====== */
+.table-box{
+  background:white;padding:18px;border-radius:12px;box-shadow:var(--shadow);
+}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+th,td{padding:12px;border-bottom:1px solid #eef3fb;text-align:left}
+.actions button{
+  border:0;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px;
+}
+.btn-edit{background:#dbeafe;color:#1e40af}
+.btn-del{background:#fee2e2;color:#991b1b}
+.btn-add{
+  padding:10px 14px;font-weight:700;background:var(--accent);
+  border:0;color:white;border-radius:10px;cursor:pointer
+}
+
+/* ====== SLIDE PANEL FOR FORM ====== */
+.panel-form{
+  position:fixed;top:0;right:-420px;height:100%;width:420px;
+  background:white;box-shadow:-4px 0 14px rgba(0,0,0,0.08);
+  padding:24px;transition:.3s;z-index:200;overflow-y:auto;
+}
+.panel-form.open{right:0}
+.panel-form h2{margin-top:0}
+.panel-form label{font-size:13px;color:var(--muted)}
+.panel-form input{
+  width:100%;padding:10px;border-radius:10px;border:1px solid #dce3ed;margin-bottom:12px
+}
+.save-btn{
+  width:100%;padding:10px;border-radius:10px;border:0;background:var(--accent);
+  color:white;font-weight:700;cursor:pointer;margin-top:10px
+}
+.cancel-btn{
+  width:100%;padding:10px;border-radius:10px;border:1px solid #dce3ed;background:#fff;color:#1e293b;font-weight:600;cursor:pointer;margin-top:6px
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="sidebar">
+  <div class="brand">
+    <div class="logo">EC</div>
+    <div class="titles">
+      <div>EasyClinic</div>
+      <div class="small">Painel Administrativo</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" >
+        <span class="icon"><img src="icons/home.svg" width="20" height="20"></span>
+        <span class="text">Início</span>
+    </a>
+
+    <a href="pacientes.html" class="active">
+        <span class="icon"><img src="icons/mask.svg" width="20" height="20"></span>
+        <span class="text">Pacientes</span>
+    </a>
+
+    <a href="consultas.html">
+        <span class="icon"><img src="icons/clipboard.svg" width="20" height="20"></span>
+        <span class="text">Consultas</span>
+    </a>
+
+    <a href="agenda-medica.html">
+        <span class="icon"><img src="icons/calendar.svg" width="20" height="20"></span>
+        <span class="text">Agenda Médica</span>
+    </a>
+
+    <a href="gerenciar-usuarios.html">
+        <span class="icon"><img src="icons/user.svg" width="20" height="20"></span>
+        <span class="text">Usuários</span>
+    </a>
+
+    <a href="relatorios.html">
+        <span class="icon"><img src="icons/chart.svg" width="20" height="20"></span>
+        <span class="text">Relatórios</span>
+    </a>
+
+    <a href="configuracoes.html">
+        <span class="icon"><img src="icons/settings.svg" width="20" height="20"></span>
+        <span class="text">Configurações</span>
+    </a>
+</nav>
+
+
+  <div class="sidebar-footer">Versão 1.0</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="btnToggle" class="icon-btn">
+    <img src="icons/menu.svg" width="20" height="20" style="vertical-align:middle;">
+</div>
+
+      <div class="search"><input id="searchPac" placeholder="Buscar pacientes..." /></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;position:relative;">
+      <div id="btnNotif" class="icon-btn">
+          <img src="icons/bell.svg" width="20" height="20" alt="Notificações">
+          </div>
+
+      <div id="notifPopup" class="notif-popup">
+        <h4>Notificações</h4>
+        <div class="notif-item"><div><strong>Novo cadastro</strong><div class="meta">20 min atrás</div></div><div class="meta">Sistema</div></div>
+        <div class="notif-item"><div><strong>Ficha atualizada</strong><div class="meta">agora</div></div><div class="meta">Recepção</div></div>
+        <div style="text-align:center;margin-top:8px"><button id="btnClearNotif" class="btn-ghost">Marcar todas como lidas</button></div>
+      </div>
+
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--muted)">Olá,</div>
+        <div style="font-weight:700">Maria Silva</div>
+      </div>
+
+      <div id="avatar" class="avatar">MS</div>
+    </div>
+  </header>
+
+  <main class="content">
+    <h2 style="margin-bottom:16px">Pacientes</h2>
+
+    <button id="btnNovo" class="btn-add">+ Novo Paciente</button>
+
+    <div class="table-box" style="margin-top:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Nascimento</th>
+            <th>Telefone</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="listaPacientes"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</div>
+
+<!-- PAINEL DE FORM -->
+<div id="panelForm" class="panel-form">
+  <h2 id="formTitulo">Novo Paciente</h2>
+
+  <label>Nome</label>
+  <input id="pNome" />
+
+  <label>CPF</label>
+  <input id="pCpf" maxlength="14" placeholder="000.000.000-00" />
+
+  <label>Data de Nascimento</label>
+  <input id="pNasc" type="date" />
+
+  <label>Telefone</label>
+  <input id="pTel" placeholder="(00) 00000-0000" />
+
+  <button id="btnSalvar" class="save-btn">Salvar</button>
+  <button id="btnCancelar" class="cancel-btn">Cancelar</button>
+</div>
+
+<script>
+/* SIDEBAR */
+const sidebar = document.getElementById('sidebar');
+document.getElementById('btnToggle').onclick = ()=> sidebar.classList.toggle('collapsed');
+
+/* NOTIF POPUP */
+const notifBtn = document.getElementById('btnNotif');
+const notifPopup = document.getElementById('notifPopup');
+notifBtn.onclick = (e)=>{
+  e.stopPropagation();
+  notifPopup.style.display = notifPopup.style.display === 'block' ? 'none' : 'block';
+};
+btnClearNotif.addEventListener('click', ()=>{
+  document.querySelectorAll('.notif-item').forEach(n => n.remove());
+
+  const existe = notifPopup.querySelector('.empty-notif');
+  if(!existe){
+    const empty = document.createElement('div');
+    empty.classList.add('empty-notif'); 
+    empty.style.textAlign = 'center';
+    empty.style.color = 'var(--muted)';
+    empty.style.padding = '8px';
+    empty.textContent = 'Nenhuma notificação.';
+    notifPopup.insertBefore(empty, btnClearNotif.parentElement);
+  }
+});
+
+document.addEventListener('click', (e)=>{
+  if(!notifPopup.contains(e.target) && e.target !== notifBtn){
+    notifPopup.style.display = 'none';
+  }
+});
+document.getElementById('avatar').onclick = ()=> location.href = 'configuracoes.html';
+
+/* FORM PANEL */
+const panel = document.getElementById('panelForm');
+const btnNovo = document.getElementById('btnNovo');
+const btnCancelar = document.getElementById('btnCancelar');
+
+let editIndex = null;
+
+btnNovo.onclick = ()=>{
+  editIndex = null;
+  document.getElementById('formTitulo').textContent = "Novo Paciente";
+  pNome.value = pNasc.value = pTel.value = pCpf.value = "";
+  panel.classList.add('open');
+};
+btnCancelar.onclick = ()=> panel.classList.remove('open');
+
+/* CPF MASK + VALIDATION */
+function maskCPF(v){
+  v = v.replace(/\D/g,"");
+  v = v.replace(/(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");
+  return v;
+}
+
+pCpf.addEventListener("input", function(){
+  this.value = maskCPF(this.value);
+});
+
+/* TELEFONE MASK — somente formato (11) 99999-9999 */
+pTel.addEventListener("input", function () {
+  let v = this.value.replace(/\D/g, "");
+
+  if (v.length > 11) v = v.slice(0, 11);
+
+  if (v.length >= 7) {
+    v = v.replace(/(\d{2})(\d{5})(\d+)/, "($1) $2-$3");
+  } else if (v.length >= 3) {
+    v = v.replace(/(\d{2})(\d+)/, "($1) $2");
+  } else {
+    v = v.replace(/(\d*)/, "($1");
+  }
+
+  this.value = v;
+});
+
+/* Official CPF validation */
+function validarCPF(cpf) {
+  cpf = cpf.replace(/\D/g,"");
+  if(cpf.length !== 11) return false;
+  if(/^(.)\1+$/.test(cpf)) return false;
+
+  let soma = 0, resto;
+
+  for(let i=1; i<=9; i++)
+    soma += parseInt(cpf.substring(i-1,i)) * (11 - i);
+  resto = (soma * 10) % 11;
+  if(resto === 10 || resto === 11) resto = 0;
+  if(resto !== parseInt(cpf.substring(9,10))) return false;
+
+  soma = 0;
+  for(let i=1; i<=10; i++)
+    soma += parseInt(cpf.substring(i-1,i)) * (12 - i);
+  resto = (soma * 10) % 11;
+  if(resto === 10 || resto === 11) resto = 0;
+  if(resto !== parseInt(cpf.substring(10,11))) return false;
+
+  return true;
+}
+
+/* STORAGE */
+function getPacientes(){
+  return JSON.parse(localStorage.getItem('pacientes') || "[]");
+}
+function savePacientes(arr){
+  localStorage.setItem('pacientes', JSON.stringify(arr));
+}
+
+/* RENDER LIST */
+function renderPacientes(){
+  const lista = document.getElementById('listaPacientes');
+  lista.innerHTML = "";
+  const data = getPacientes();
+  data.forEach((p, i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.nome}</td>
+      <td>${p.cpf}</td>
+      <td>${p.nasc}</td>
+      <td>${p.tel}</td>
+      <td>
+        <button class="btn-edit" onclick="editar(${i})">Editar</button>
+        <button class="btn-del" onclick="excluir(${i})">Excluir</button>
+      </td>
+    `;
+    lista.appendChild(tr);
+  });
+}
+renderPacientes();
+
+/* EDITAR */
+window.editar = (i)=>{
+  const p = getPacientes()[i];
+  editIndex = i;
+  pNome.value = p.nome;
+  pCpf.value = p.cpf;
+  pNasc.value = p.nasc;
+  pTel.value = p.tel;
+  document.getElementById('formTitulo').textContent = "Editar Paciente";
+  panel.classList.add('open');
+};
+
+/* EXCLUIR */
+window.excluir = (i)=>{
+  if(confirm("Deseja excluir este paciente?")){
+    const arr = getPacientes();
+    arr.splice(i,1);
+    savePacientes(arr);
+    renderPacientes();
+  }
+};
+
+/* SALVAR */
+document.getElementById('btnSalvar').onclick = ()=>{
+  const nome = pNome.value.trim();
+  const cpf = pCpf.value.trim();
+  const nasc = pNasc.value;
+  const tel = pTel.value.trim();
+
+  if(!nome || !cpf || !nasc || !tel){
+    alert("Preencha todos os campos.");
+    return;
+  }
+
+  if(!validarCPF(cpf)){
+    alert("CPF inválido.");
+    return;
+  }
+
+  const arr = getPacientes();
+
+  if(editIndex === null){
+    arr.push({nome,cpf,nasc,tel});
+  } else {
+    arr[editIndex] = {nome,cpf,nasc,tel};
+  }
+
+  savePacientes(arr);
+  renderPacientes();
+  panel.classList.remove('open');
+};
+
+/* BUSCA */
+document.getElementById('searchPac').oninput = (e)=>{
+  const v = e.target.value.toLowerCase();
+  document.querySelectorAll('#listaPacientes tr').forEach(tr=>{
+    tr.style.display = tr.textContent.toLowerCase().includes(v) ? "" : "none";
+  });
+};
+
+/* LOGIN — NOME E AVATAR DINÂMICOS */
+const user = JSON.parse(localStorage.getItem("usuario_logado"));
+
+if (user) {
+  // Nome no header
+  document.querySelector("header div div[style*='font-weight']").textContent =
+    user.nome;
+
+  // Avatar (iniciais)
+  const iniciais = user.nome
+    .split(" ")
+    .map(p => p[0])
+    .join("")
+    .toUpperCase();
+
+  document.getElementById("avatar").textContent = iniciais;
+}
+
+</script>
+</body>
+</html>

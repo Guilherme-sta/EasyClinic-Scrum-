@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EasyClinic — Relatórios</title>
+<script>
+  const usuarioLogado = localStorage.getItem("usuario_logado");
+  if (!usuarioLogado) {
+    window.location.href = "login.html";
+  }
+</script>
+
+<style>
+:root{
+  --bg:#f6f8fb; --card:#ffffff; --muted:#69707a;
+  --accent:#4f46e5; --accent-2:#06b6d4;
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px; --max-width:1200px;
+  font-family:Inter,system-ui;
+}
+*{box-sizing:border-box}
+body,html{margin:0;height:100%;background:var(--bg)}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;background:white;border-right:1px solid #e6eef6;
+  padding:20px;display:flex;flex-direction:column;gap:14px;
+  transition:.25s ease;
+}
+.sidebar.collapsed{width:72px;padding-left:10px;padding-right:10px}
+.logo{
+  width:44px;height:44px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:white;
+}
+.brand{display:flex;gap:12px;align-items:center;font-weight:700}
+.titles{display:flex;flex-direction:column}
+.small{font-size:12px;color:var(--muted)}
+.sidebar.collapsed .titles,
+.sidebar.collapsed .text,
+.sidebar.collapsed .sidebar-footer{display:none}
+
+.nav{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.nav a{
+  display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;
+  font-weight:600;text-decoration:none;color:#0f172a;
+}
+.nav a:hover{background:#f1f5f9}
+.nav .active{
+  background:linear-gradient(90deg,rgba(79,70,229,0.12),rgba(6,182,212,0.06));
+  box-shadow:var(--shadow);
+}
+
+.sidebar-footer{
+  margin-top:auto;font-size:12px;color:var(--muted);text-align:center
+}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column}
+
+/* HEADER */
+header{
+  height:72px;display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;border-bottom:1px solid rgba(0,0,0,.05);
+  position:relative;
+}
+.icon-btn{
+  width:40px;height:40px;border-radius:10px;background:white;
+  border:1px solid #e6eef6;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:18px;
+}
+.icon-btn:hover{background:#eef2ff}
+.search input{
+  padding:10px 12px;border-radius:10px;border:1px solid #e6eef6;
+  background:white;min-width:260px;
+}
+
+.avatar{
+  width:40px;height:40px;border-radius:999px;background:#c7d2fe;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#1e293b;cursor:pointer;
+}
+
+/* NOTIF POPUP */
+.notif-popup{
+  position:absolute;top:74px;right:28px;width:300px;background:white;
+  border-radius:12px;box-shadow:var(--shadow);padding:12px;display:none;z-index:50;
+}
+.notif-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px;border:1px solid #eef3fb;background:white;
+  margin-bottom:8px;border-radius:10px;
+}
+.meta{font-size:12px;color:var(--muted)}
+
+/* CONTENT */
+.content{padding:28px;max-width:var(--max-width);margin:0 auto;width:100%}
+.box{
+  background:white;padding:18px;border-radius:12px;
+  box-shadow:var(--shadow);margin-bottom:22px;
+}
+.muted{color:var(--muted)}
+.btn{
+  padding:8px 12px;border-radius:10px;border:0;background:var(--accent);
+  color:white;font-weight:700;cursor:pointer
+}
+.btn-ghost{
+  padding:8px 12px;border-radius:10px;background:transparent;
+  border:1px solid #e6eef6;color:#1e293b;font-weight:700;cursor:pointer
+}
+.hidden{display:none}
+
+/* TABS */
+.view-tabs{display:flex;gap:8px;margin-top:12px}
+.tab{
+  padding:8px 10px;border-radius:8px;border:1px solid #eef3fb;
+  cursor:pointer;font-weight:600;transition:0.25s
+}
+.tab.active{
+  background:linear-gradient(90deg,#eef2ff,#ecfeff);
+  border-color:transparent
+}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px;border-bottom:1px solid #eef3fb;text-align:left}
+
+/* CHART - REMOVIDO !important */
+.chart-container{
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+/* small UI tweaks for empty states */
+.empty-msg{color:var(--muted);text-align:center;padding:12px}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo">EC</div>
+    <div class="titles">
+      <div>EasyClinic</div>
+      <div class="small">Painel Administrativo</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" >
+        <span class="icon"><img src="icons/home.svg" width="20" height="20"></span>
+        <span class="text">Início</span>
+    </a>
+
+    <a href="pacientes.html">
+        <span class="icon"><img src="icons/mask.svg" width="20" height="20"></span>
+        <span class="text">Pacientes</span>
+    </a>
+
+    <a href="consultas.html">
+        <span class="icon"><img src="icons/clipboard.svg" width="20" height="20"></span>
+        <span class="text">Consultas</span>
+    </a>
+
+    <a href="agenda-medica.html">
+        <span class="icon"><img src="icons/calendar.svg" width="20" height="20"></span>
+        <span class="text">Agenda Médica</span>
+    </a>
+
+    <a href="gerenciar-usuarios.html">
+        <span class="icon"><img src="icons/user.svg" width="20" height="20"></span>
+        <span class="text">Usuários</span>
+    </a>
+
+    <a href="relatorios.html" class="active">
+        <span class="icon"><img src="icons/chart.svg" width="20" height="20"></span>
+        <span class="text">Relatórios</span>
+    </a>
+
+    <a href="configuracoes.html">
+        <span class="icon"><img src="icons/settings.svg" width="20" height="20"></span>
+        <span class="text">Configurações</span>
+    </a>
+</nav>
+
+
+  <div class="sidebar-footer">Versão 1.0</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+<header>
+
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div id="btnToggle" class="icon-btn">
+    <img src="icons/menu.svg" width="20" height="20" style="vertical-align:middle;">
+</div>
+
+
+    <!-- BUSCA DO HEADER (somente lista e tabela) -->
+    <div class="search"><input id="searchHeader" placeholder="Buscar registros..."></div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:16px;position:relative;">
+
+    <div id="btnNotif" class="icon-btn">
+          <img src="icons/bell.svg" width="20" height="20" alt="Notificações">
+          </div>
+
+    <div id="notifPopup" class="notif-popup">
+      <h4>Notificações</h4>
+      <div class="notif-item"><div><strong>Relatório atualizado</strong><div class="meta">agora</div></div><div class="meta">Sistema</div></div>
+      <div class="notif-item"><div><strong>Nova consulta</strong><div class="meta">10:00h</div></div><div class="meta">Recepção</div></div>
+      <div style="text-align:center;margin-top:8px"><button id="btnClearNotif" class="btn-ghost">Marcar todas como lidas</button></div>
+    </div>
+
+    <div style="text-align:right">
+      <div style="font-size:13px;color:var(--muted)">Olá,</div>
+      <div style="font-weight:700">Maria Silva</div>
+    </div>
+
+    <div id="avatar" class="avatar">MS</div>
+  </div>
+</header>
+
+<main class="content">
+
+  <h2>Relatórios</h2>
+
+  <!-- FILTROS -->
+  <div class="box">
+    <h3>Filtros de Pesquisa</h3>
+
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+      <div>
+        <label class="muted">Período (início)</label><br>
+        <input id="dataInicio" type="date">
+      </div>
+
+      <div>
+        <label class="muted">Período (fim)</label><br>
+        <input id="dataFim" type="date">
+      </div>
+
+      <div>
+        <label class="muted">Especialidade</label><br>
+        <select id="fEspecialidade">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button id="btnBuscar" class="btn">
+    <img src="icons/magnifying-glass.svg" width="14" height="14" style="vertical-align:middle; margin-right:4px;">
+    Buscar
+</button>
+
+        <button id="btnLimpar" class="btn-ghost">Limpar</button>
+      </div>
+    </div>
+
+    <div class="view-tabs">
+      <div class="tab active" data-view="grafico" id="tabGraf">Gráfico</div>
+      <div class="tab" data-view="lista" id="tabLista">Lista</div>
+      <div class="tab" data-view="tabela" id="tabTabela">Tabela</div>
+    </div>
+
+    <div style="margin-top:8px;font-size:13px;color:var(--muted)">
+      Visualizações só aparecem depois da pesquisa.
+    </div>
+  </div>
+
+  <!-- GRAFICO GERAL -->
+  <div id="boxGrafico" class="box hidden">
+    <h3>Consultas por Dia</h3>
+    <div class="chart-container">
+      <canvas id="graficoGeral"></canvas>
+    </div>
+  </div>
+
+  <!-- GRAFICO ESPECIALIDADES -->
+  <div id="boxEspecialidades" class="box hidden">
+    <h3>Consultas por Especialidade</h3>
+    <div class="chart-container">
+      <canvas id="graficoEspecialidades"></canvas>
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div id="boxLista" class="box hidden">
+    <h3>Lista Simplificada</h3>
+    <ul id="listaRegistros"></ul>
+  </div>
+
+  <!-- TABELA -->
+  <div id="boxTabela" class="box hidden">
+    <h3>Tabela Completa</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th><th>Paciente</th><th>Médico</th><th>Especialidade</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaRegistros"></tbody>
+    </table>
+  </div>
+</main>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* SIDEBAR */
+btnToggle.onclick = ()=>sidebar.classList.toggle("collapsed");
+
+/* NOTIF */
+btnNotif.onclick = e=>{
+  e.stopPropagation();
+  notifPopup.style.display = notifPopup.style.display==="block" ? "none" : "block";
+};
+btnClearNotif.addEventListener('click', ()=>{
+  document.querySelectorAll('.notif-item').forEach(n => n.remove());
+  const existe = notifPopup.querySelector('.empty-notif');
+  if(!existe){
+    const empty = document.createElement('div');
+    empty.classList.add('empty-notif');
+    empty.style.textAlign = 'center';
+    empty.style.color = 'var(--muted)';
+    empty.style.padding = '8px';
+    empty.textContent = 'Nenhuma notificação.';
+    notifPopup.insertBefore(empty, btnClearNotif.parentElement);
+  }
+});
+
+document.addEventListener("click", e=>{
+  if(!notifPopup.contains(e.target) && e.target!==btnNotif)
+    notifPopup.style.display="none";
+});
+avatar.onclick = ()=>location.href="configuracoes.html";
+
+/* DADOS REAIS DO LOCALSTORAGE */
+function lerConsultasDoStorage(){
+  let raw = localStorage.getItem("consultas");
+  if(!raw) return [];
+  try{
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) return [];
+    return arr.map(c => {
+      const dataIso = (c.data && c.hora) ? (c.data + "T" + c.hora) : (c.data || "");
+      return {
+        paciente: c.paciente || "",
+        medico: c.medico || "",
+        esp: c.esp || c.especialidade || "",
+        data: c.data || "",
+        hora: c.hora || "",
+        status: c.status || "Aguardando",
+        dataObj: dataIso ? new Date(dataIso) : (c.data ? new Date(c.data) : null)
+      };
+    });
+  }catch(e){
+    console.error("Erro ao parsear localStorage.consultas:", e);
+    return [];
+  }
+}
+
+/* POPULAR SELECT DE ESPECIALIDADES */
+function popularEspecialidades(registros){
+  const select = document.getElementById("fEspecialidade");
+  const set = new Set();
+  registros.forEach(r => { if(r.esp) set.add(r.esp); });
+  const padrao = ["Cardiologia","Dermatologia","Ortopedia","Pediatria","Clínico Geral"];
+  const lista = set.size ? Array.from(set).sort() : padrao;
+  select.innerHTML = '<option value="">Todas</option>';
+  lista.forEach(e=>{
+    const op = document.createElement("option");
+    op.value = e;
+    op.textContent = e;
+    select.appendChild(op);
+  });
+}
+
+/* ELEMENTOS */
+const boxGraf=document.getElementById("boxGrafico");
+const boxEsp=document.getElementById("boxEspecialidades");
+const boxLista=document.getElementById("boxLista");
+const boxTabela=document.getElementById("boxTabela");
+const tabGraf=document.getElementById("tabGraf");
+const tabLista=document.getElementById("tabLista");
+const tabTabelaBtn=document.getElementById("tabTabela");
+const tabs=[tabGraf,tabLista,tabTabelaBtn];
+const tabelaRegistros = document.getElementById("tabelaRegistros");
+const listaRegistros = document.getElementById("listaRegistros");
+const searchHeader = document.getElementById("searchHeader");
+const btnBuscar = document.getElementById("btnBuscar");
+const btnLimpar = document.getElementById("btnLimpar");
+
+let _chartG = null;
+let _chartE = null;
+
+function esconderTudo(){
+  boxGraf.classList.add("hidden");
+  boxEsp.classList.add("hidden");
+  boxLista.classList.add("hidden");
+  boxTabela.classList.add("hidden");
+}
+function marcarTabAtiva(v){
+  tabs.forEach(t=>t.classList.toggle("active",t.dataset.view===v));
+}
+tabGraf.onclick=()=>{marcarTabAtiva("grafico");mostrarView("grafico")};
+tabLista.onclick=()=>{marcarTabAtiva("lista");mostrarView("lista")};
+tabTabelaBtn.onclick=()=>{marcarTabAtiva("tabela");mostrarView("tabela")};
+function mostrarView(v){
+  esconderTudo();
+  if(v==="grafico"){ boxGraf.classList.remove("hidden"); boxEsp.classList.remove("hidden"); }
+  if(v==="lista"){ boxLista.classList.remove("hidden"); }
+  if(v==="tabela"){ boxTabela.classList.remove("hidden"); }
+}
+
+function parseDateInput(v){
+  if(!v) return null;
+  const p=v.split("-");
+  return new Date(p[0],p[1]-1,p[2]);
+}
+
+/* função principal: busca e desenha */
+function buscar(){
+  const registrosBrutos = lerConsultasDoStorage();
+
+  if(!registrosBrutos.length){
+    esconderTudo();
+    tabelaRegistros.innerHTML = '<tr><td colspan="5" class="empty-msg">Nenhuma consulta encontrada no banco de dados.</td></tr>';
+    listaRegistros.innerHTML = '<li class="empty-msg">Nenhum registro encontrado.</li>';
+    if(_chartG){ _chartG.destroy(); _chartG = null; }
+    if(_chartE){ _chartE.destroy(); _chartE = null; }
+    return;
+  }
+
+  popularEspecialidades(registrosBrutos);
+
+  const registros = registrosBrutos.map(r => {
+    const dataObj = r.dataObj instanceof Date && !isNaN(r.dataObj) ? r.dataObj : (r.data ? new Date(r.data + "T00:00") : null);
+    return {
+      paciente: r.paciente,
+      medico: r.medico,
+      esp: r.esp,
+      status: r.status || "Aguardando",
+      data: r.data ? (new Date(r.data)).toLocaleDateString("pt-BR") : "",
+      dataObj
+    };
+  }).filter(r => r.dataObj);
+
+  const di = parseDateInput(document.getElementById("dataInicio").value);
+  const df = parseDateInput(document.getElementById("dataFim").value);
+  const esp = document.getElementById("fEspecialidade").value;
+
+  let inicio = di;
+  let fim = df;
+  if(!inicio || !fim){
+    const sorted = registros.slice().sort((a,b)=>a.dataObj - b.dataObj);
+    if(sorted.length){
+      const ultimo = sorted[sorted.length-1].dataObj;
+      if(!inicio) inicio = new Date(ultimo.getFullYear(), ultimo.getMonth(), ultimo.getDate()-29);
+      if(!fim) fim = ultimo;
+    }
+  }
+
+  const filtrados = registros.filter(r=>{
+    if(inicio && r.dataObj < inicio) return false;
+    if(fim){
+      const fimComHoras = new Date(fim.getFullYear(), fim.getMonth(), fim.getDate(), 23, 59, 59);
+      if(r.dataObj > fimComHoras) return false;
+    }
+    if(esp && r.esp !== esp) return false;
+    return true;
+  }).sort((a,b)=>b.dataObj - a.dataObj);
+
+  // TABELA
+  tabelaRegistros.innerHTML = "";
+  if(filtrados.length === 0){
+    tabelaRegistros.innerHTML = '<tr><td colspan="5" class="empty-msg">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
+  } else {
+    filtrados.forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.data}</td>
+        <td>${r.paciente}</td>
+        <td>${r.medico}</td>
+        <td>${r.esp}</td>
+        <td>${r.status}</td>
+      `;
+      tabelaRegistros.appendChild(tr);
+    });
+  }
+
+  // LISTA
+  listaRegistros.innerHTML = "";
+  if(filtrados.length === 0){
+    listaRegistros.innerHTML = '<li class="empty-msg">Nenhum registro encontrado para os filtros selecionados.</li>';
+  } else {
+    filtrados.slice(0,200).forEach(r=>{
+      const li = document.createElement("li");
+      li.textContent = `${r.data} — ${r.paciente} — ${r.medico} — ${r.esp} — ${r.status}`;
+      listaRegistros.appendChild(li);
+    });
+  }
+
+  // GRAFICO: Consultas por dia
+  const mapDia = {};
+  filtrados.forEach(r=>{
+    mapDia[r.data] = (mapDia[r.data]||0) + 1;
+  });
+  const labels = Object.keys(mapDia).sort((a,b)=>{
+    const da=new Date(a.split("/").reverse().join("-"));
+    const db=new Date(b.split("/").reverse().join("-"));
+    return da - db;
+  });
+  const values = labels.map(l=>mapDia[l]);
+
+  // GRAFICO: Especialidades
+  const mapEsp = {};
+  const espOptions = Array.from(document.getElementById("fEspecialidade").options).filter(o=>o.value);
+  if(espOptions.length){
+    espOptions.forEach(o=>mapEsp[o.value] = 0);
+  } else {
+    ["Cardiologia","Dermatologia","Ortopedia","Pediatria","Clínico Geral"].forEach(e=>mapEsp[e]=0);
+  }
+  filtrados.forEach(r=>{ if(r.esp in mapEsp) mapEsp[r.esp]++; else mapEsp[r.esp]=1; });
+
+  // Mostrar view atual
+  const v = document.querySelector(".tab.active").dataset.view;
+  mostrarView(v);
+
+  // destruir charts antigos
+  if(_chartG){ _chartG.destroy(); _chartG = null; }
+  if(_chartE){ _chartE.destroy(); _chartE = null; }
+
+  // Criar chart geral (linha)
+  const ctxG = document.getElementById("graficoGeral").getContext("2d");
+  _chartG = new Chart(ctxG, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Consultas",
+        data: values,
+        borderColor: "#4f46e5",
+        backgroundColor: "rgba(79,70,229,0.15)",
+        fill: true,
+        tension: 0.25,
+        pointRadius: 4
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: true,
+      aspectRatio: 2.5,
+      plugins: {legend: {display: false}}
+    }
+  });
+
+  // Criar chart de especialidades (bar)
+  const ctxE = document.getElementById("graficoEspecialidades").getContext("2d");
+  _chartE = new Chart(ctxE, {
+    type: "bar",
+    data: {
+      labels: Object.keys(mapEsp),
+      datasets: [{
+        label: "Quantidade",
+        data: Object.keys(mapEsp).map(k=>mapEsp[k]),
+        backgroundColor: ["#4f46e5","#06b6d4","#5b21b6","#059669","#dc2626"]
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: true,
+      aspectRatio: 2.5,
+      plugins: {legend: {display: false}}
+    }
+  });
+
+}
+
+/* Inicialização UI */
+(function init(){
+  const registrosBrutos = lerConsultasDoStorage();
+  popularEspecialidades(registrosBrutos);
+
+  const hoje=new Date();
+  const ini=new Date();
+  ini.setDate(hoje.getDate()-29);
+  const pad=n=>n.toString().padStart(2,"0");
+  const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  document.getElementById("dataInicio").value = fmt(ini);
+  document.getElementById("dataFim").value = fmt(hoje);
+
+  marcarTabAtiva("grafico");
+  esconderTudo();
+})();
+
+/* Binding de eventos */
+btnBuscar.addEventListener("click", (e)=>{ e.preventDefault(); buscar(); });
+btnLimpar.addEventListener("click", (e)=>{ e.preventDefault(); 
+  document.getElementById("dataInicio").value = "";
+  document.getElementById("dataFim").value = "";
+  document.getElementById("fEspecialidade").value = "";
+  esconderTudo();
+  tabelaRegistros.innerHTML = "";
+  listaRegistros.innerHTML = "";
+  if(_chartG){ _chartG.destroy(); _chartG = null; }
+  if(_chartE){ _chartE.destroy(); _chartE = null; }
+});
+
+searchHeader.addEventListener("input", ()=>{
+  const q = searchHeader.value.toLowerCase();
+  document.querySelectorAll("#boxTabela tbody tr").forEach(tr=>{
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+  document.querySelectorAll("#boxLista li").forEach(li=>{
+    li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+});
+
+/* Login dinamico no header */
+const user = JSON.parse(localStorage.getItem("usuario_logado"));
+if (user) {
+  const el = document.querySelector("header div div[style*='font-weight']");
+  if(el) el.textContent = user.nome;
+  const avatarEl = document.getElementById("avatar");
+  if(avatarEl){
+    const iniciais = user.nome.split(" ").map(p=>p[0]).join("").toUpperCase();
+    avatarEl.textContent = iniciais;
+  }
+}
+
+</script>
+</body>
+</html>

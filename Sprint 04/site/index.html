@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EasyClinic – Início</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- SCRIPT DE VALIDAÇÃO DE LOGIN -->
+  <script>
+    const logado = localStorage.getItem('usuario_logado');
+    if(!logado){
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#69707a;
+      --accent:#4f46e5;
+      --accent-2:#06b6d4;
+      --success:#16a34a;
+      --shadow: 0 6px 18px rgba(16,24,40,0.08);
+      --radius:12px;
+      --glass: rgba(255,255,255,0.6);
+      --max-width:1200px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:#0f172a}
+    .app{display:flex;min-height:100vh;}
+
+    /* FIX – igual ao comportamento da página Consultas */
+    .main, .content {
+      transform: none !important;
+      zoom: 1 !important;
+    }
+
+    .sidebar {
+      flex-shrink: 0 !important;
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      width:260px;
+      background:white;
+      border-right:1px solid #e6eef6;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      transition:.25s ease;
+    }
+    .sidebar.collapsed{
+      width:72px;
+      padding-left:10px;
+      padding-right:10px;
+    }
+
+    .logo{
+      width:44px;height:44px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:white;font-weight:700;display:flex;align-items:center;justify-content:center;
+    }
+
+    .brand{display:flex;gap:12px;align-items:center;font-weight:700}
+    .titles{display:flex;flex-direction:column}
+    .small{font-size:12px;color:var(--muted)}
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:10px;
+    }
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px;
+      border-radius:10px;
+      font-weight:600;
+      text-decoration:none;
+      color:#0f172a;
+    }
+    .nav a:hover{background:#f1f5f9}
+    .nav .active{
+      background:linear-gradient(90deg,rgba(79,70,229,0.12),rgba(6,182,212,0.06));
+      box-shadow:var(--shadow);
+    }
+
+    .sidebar.collapsed .titles,
+    .sidebar.collapsed .text,
+    .sidebar.collapsed .sidebar-footer{
+      display:none;
+    }
+    .sidebar.collapsed .logo{margin:auto}
+
+    .sidebar-footer{
+      margin-top:auto;
+      font-size:12px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column}
+    header{height:72px;background:transparent;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(15,23,42,0.04);position:relative}
+    .search{display:flex;align-items:center;gap:12px}
+    .search input{padding:10px 12px;border-radius:10px;border:1px solid #e6eef6;background:#fff;min-width:260px}
+    .controls{display:flex;align-items:center;gap:12px}
+    .icon-btn{width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid #e6eef6;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-btn:hover{background:#f1f5f9}
+    .avatar{width:40px;height:40px;border-radius:999px;background:#c7d2fe;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1e293b;cursor:pointer}
+
+    .notif-popup{
+      position:absolute;top:74px;right:28px;width:300px;background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:12px;display:none;z-index:50;
+    }
+    .notif-popup h4{margin:0 0 8px 0}
+    .notif-item{padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-bottom:8px;border:1px solid #eef3fb;display:flex;justify-content:space-between;align-items:center}
+    .notif-item .meta{font-size:12px;color:var(--muted)}
+
+    .content{padding:28px;max-width:var(--max-width);margin:0 auto;width:100%}
+    .row{display:flex;gap:18px}
+
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:18px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow);min-height:88px}
+    .card .label{font-size:13px;color:var(--muted);margin-bottom:8px}
+    .card .value{font-size:20px;font-weight:700}
+
+    .panel{display:flex;gap:18px}
+    .panel-left{flex:2;background:transparent}
+    .panel-right{flex:1}
+
+    .box{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
+    .box h3{margin:0 0 12px 0;font-size:16px}
+
+    .activities{display:flex;flex-direction:column;gap:10px}
+    .act{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg, #fff,#fbfdff);border:1px solid #eef3fb}
+    .act-left{display:flex;flex-direction:column}
+    .act-time{font-size:12px;color:var(--muted)}
+
+    table{Width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #f3f6fb}
+    .status-Aguardando{ color: #d97706; font-weight: 600;}
+    .status-Confirmado{ color: #2563eb; font-weight: 600;}
+    .status-Finalizado{ color: #6b7280; font-weight: 600;}
+
+    .btn{padding:8px 12px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:700;cursor:pointer}
+    .btn-ghost{padding:8px 12px;border-radius:10px;border:1px solid #e6eef6;background:transparent;color:#0f172a;cursor:pointer}
+    
+    @media (max-width:900px){
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .panel{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <div class="logo">EC</div>
+        <div class="titles">
+          <div>EasyClinic</div>
+          <div class="small">Painel Administrativo</div>
+        </div>
+      </div>
+    
+      <nav class="nav">
+    <a href="index.html" class="active">
+        <span class="icon"><img src="icons/home.svg" width="20" height="20"></span>
+        <span class="text">Início</span>
+    </a>
+
+    <a href="pacientes.html">
+        <span class="icon"><img src="icons/mask.svg" width="20" height="20"></span>
+        <span class="text">Pacientes</span>
+    </a>
+
+    <a href="consultas.html">
+        <span class="icon"><img src="icons/clipboard.svg" width="20" height="20"></span>
+        <span class="text">Consultas</span>
+    </a>
+
+    <a href="agenda-medica.html">
+        <span class="icon"><img src="icons/calendar.svg" width="20" height="20"></span>
+        <span class="text">Agenda Médica</span>
+    </a>
+
+    <a href="gerenciar-usuarios.html">
+        <span class="icon"><img src="icons/user.svg" width="20" height="20"></span>
+        <span class="text">Usuários</span>
+    </a>
+
+    <a href="relatorios.html">
+        <span class="icon"><img src="icons/chart.svg" width="20" height="20"></span>
+        <span class="text">Relatórios</span>
+    </a>
+
+    <a href="configuracoes.html">
+        <span class="icon"><img src="icons/settings.svg" width="20" height="20"></span>
+        <span class="text">Configurações</span>
+    </a>
+</nav>
+
+    
+      <div class="sidebar-footer">Versão 1.0</div>
+    </aside>
+    
+    <div class="main">
+      <header>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="btnToggle" class="icon-btn">
+    <img src="icons/menu.svg" width="20" height="20" style="vertical-align:middle;">
+</div>
+
+          <div class="search"><input id="searchInput" placeholder="Buscar pacientes ou consultas..." /></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;position:relative;">
+          <div id="btnNotif" class="icon-btn">
+          <img src="icons/bell.svg" width="20" height="20" alt="Notificações">
+          </div>
+          <div id="notifPopup" class="notif-popup">
+            <h4>Notificações</h4>
+            <div style="text-align:center;margin-top:8px"><button id="btnClearNotif" class="btn-ghost">Marcar todas como lidas</button></div>
+          </div>
+
+          <div style="text-align:right">
+            <div style="font-size:13px;color:var(--muted)">Olá,</div>
+            <div id="headerNome" style="font-weight:700">Maria Silva</div>
+          </div>
+    
+          <div id="avatar" class="avatar">MS</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="cards">
+          <div class="card"><div class="label">Consultas Hoje</div><div class="value" id="cardConsultas">0</div></div>
+          <div class="card"><div class="label">Pacientes Cadastrados</div><div class="value" id="cardPacientes">0</div></div>
+          <div class="card"><div class="label">Médicos Ativos</div><div class="value" id="cardMedicos">0</div></div>
+          <div class="card"><div class="label">Cancelamentos</div><div class="value" id="cardCancelamentos">0</div></div>
+        </div>
+
+        <div class="panel">
+          <section class="panel-left">
+            <div class="box">
+              <h3>Consultas da Semana</h3>
+              <canvas id="chart"></canvas>
+            </div>
+
+            <div class="box" style="margin-top:18px">
+              <h3>Próximas Consultas (Hoje e Futuras)</h3>
+              <table>
+                <thead>
+                  <tr><th>Data/Horário</th><th>Paciente</th><th>Médico</th><th>Status</th></tr>
+                </thead>
+                <tbody id="proxConsultas"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="panel-right">
+            <div class="box">
+              <h3>Atividades Recentes</h3>
+              <div class="activities" id="activities"></div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* SIDEBAR */
+const sidebar = document.getElementById('sidebar');
+const btnToggle = document.getElementById('btnToggle');
+btnToggle.onclick = () => sidebar.classList.toggle('collapsed');
+
+/* NOTIFICAÇÕES */
+const btnNotif = document.getElementById('btnNotif');
+const notifPopup = document.getElementById('notifPopup');
+btnNotif.onclick = e=>{
+  e.stopPropagation();
+  notifPopup.style.display = notifPopup.style.display === "block" ? "none" : "block";
+};
+
+const btnClearNotif = document.getElementById('btnClearNotif');
+btnClearNotif.addEventListener('click', ()=>{
+  document.querySelectorAll('.notif-item').forEach(n => n.remove());
+  const existe = notifPopup.querySelector('.empty-notif');
+  if(!existe){
+    const empty = document.createElement('div');
+    empty.classList.add('empty-notif');
+    empty.style.textAlign = 'center';
+    empty.style.color = 'var(--muted)';
+    empty.style.padding = '8px';
+    empty.textContent = 'Nenhuma notificação.';
+    notifPopup.insertBefore(empty, btnClearNotif.parentElement);
+  }
+});
+
+document.addEventListener('click', e=>{
+  if(!notifPopup.contains(e.target) && e.target !== btnNotif){
+    notifPopup.style.display = "none";
+  }
+});
+
+const avatar = document.getElementById('avatar');
+avatar.onclick = ()=>location.href="configuracoes.html";
+
+/* DADOS REAIS DO LOCALSTORAGE */
+function getConsultas(){
+  return JSON.parse(localStorage.getItem("consultas") || "[]");
+}
+
+function getPacientes(){
+  return JSON.parse(localStorage.getItem("pacientes") || "[]");
+}
+
+function getUsuarios(){
+  return JSON.parse(localStorage.getItem("db_usuarios") || "[]");
+}
+
+/* CARDS SUPERIORES */
+function atualizarCards(){
+  const consultas = getConsultas();
+  const pacientes = getPacientes();
+  const usuarios = getUsuarios();
+  
+  const hoje = new Date().toISOString().split('T')[0];
+  
+  // Consultas hoje
+  const consultasHoje = consultas.filter(c => c.data === hoje).length;
+  document.getElementById('cardConsultas').textContent = consultasHoje;
+  
+  // Pacientes cadastrados
+  document.getElementById('cardPacientes').textContent = pacientes.length;
+  
+  // Médicos ativos
+  const medicosAtivos = usuarios.filter(u => u.tipo === 'Médico' && u.status === 'Ativo').length;
+  document.getElementById('cardMedicos').textContent = medicosAtivos;
+  
+  // Cancelamentos
+  const cancelamentos = consultas.filter(c => c.status === 'Cancelada').length;
+  document.getElementById('cardCancelamentos').textContent = cancelamentos;
+}
+
+/* GRÁFICO DA SEMANA */
+function criarGraficoSemana(){
+  const consultas = getConsultas();
+  const hoje = new Date();
+  
+  // Últimos 7 dias
+  const labels = [];
+  const data = [];
+  
+  for(let i = 6; i >= 0; i--){
+    const dia = new Date(hoje);
+    dia.setDate(hoje.getDate() - i);
+    const diaStr = dia.toISOString().split('T')[0];
+    
+    labels.push(dia.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}));
+    
+    const count = consultas.filter(c => c.data === diaStr).length;
+    data.push(count);
+  }
+  
+  const ctx = document.getElementById('chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Consultas',
+        data: data,
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79,70,229,0.15)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 3,
+      plugins: {
+        legend: {display: false}
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          suggestedMax: 8,
+          ticks: {
+            stepSize: 2
+          }
+        }
+      }
+    }
+  });
+}
+
+/* PRÓXIMAS CONSULTAS */
+function renderProximasConsultas(){
+  const consultas = getConsultas();
+  const tbody = document.getElementById('proxConsultas');
+  const hoje = new Date().toISOString().split('T')[0];
+  
+  const futuras = consultas
+    .filter(c => c.data >= hoje && c.status !== 'Cancelada')
+    .sort((a, b) => {
+      const dataA = new Date(a.data + 'T' + a.hora);
+      const dataB = new Date(b.data + 'T' + b.hora);
+      return dataA - dataB;
+    })
+    .slice(0, 5);
+  
+  tbody.innerHTML = '';
+  
+  if(futuras.length === 0){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Nenhuma consulta agendada</td></tr>';
+    return;
+  }
+  
+  futuras.forEach(c => {
+    const dataFormatada = c.data.split('-').reverse().join('/');
+    const statusClass = `status-${c.status || 'Aguardando'}`;
+    
+    tbody.innerHTML += `
+      <tr>
+        <td>${dataFormatada} ${c.hora}</td>
+        <td><strong>${c.paciente}</strong></td>
+        <td>${c.medico}</td>
+        <td><span class="${statusClass}">${c.status || 'Aguardando'}</span></td>
+      </tr>
+    `;
+  });
+}
+
+/* ATIVIDADES RECENTES */
+function renderAtividades(){
+  const consultas = getConsultas();
+  const pacientes = getPacientes();
+  const div = document.getElementById('activities');
+  
+  const atividades = [];
+  
+  // Últimas 3 consultas criadas
+  if(consultas.length > 0){
+    const consultasRecentes = consultas.slice(-3).reverse();
+    consultasRecentes.forEach(c => {
+      atividades.push({
+        tipo: 'Consulta agendada',
+        detalhe: `${c.paciente} - ${c.medico}`,
+        tempo: 'Recente'
+      });
+    });
+  }
+  
+  // Últimos 2 pacientes cadastrados
+  if(pacientes.length > 0){
+    const pacientesRecentes = pacientes.slice(-2).reverse();
+    pacientesRecentes.forEach(p => {
+      atividades.push({
+        tipo: 'Novo paciente',
+        detalhe: p.nome,
+        tempo: 'Recente'
+      });
+    });
+  }
+  
+  div.innerHTML = '';
+  
+  if(atividades.length === 0){
+    div.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhuma atividade recente</div>';
+    return;
+  }
+  
+  atividades.slice(0, 5).forEach(a => {
+    div.innerHTML += `
+      <div class="act">
+        <div class="act-left">
+          <strong style="font-size:13px">${a.tipo}</strong>
+          <div class="act-time">${a.detalhe}</div>
+        </div>
+        <div class="meta">${a.tempo}</div>
+      </div>
+    `;
+  });
+}
+
+/* BUSCA */
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', (e) => {
+  const termo = e.target.value.toLowerCase();
+  
+  if(termo.length < 2) return;
+  
+  const pacientes = getPacientes();
+  const consultas = getConsultas();
+  
+  const resultadosPac = pacientes.filter(p => 
+    p.nome.toLowerCase().includes(termo) || 
+    p.cpf.includes(termo)
+  );
+  
+  const resultadosCons = consultas.filter(c => 
+    c.paciente.toLowerCase().includes(termo) || 
+    c.medico.toLowerCase().includes(termo)
+  );
+  
+  console.log('Pacientes encontrados:', resultadosPac);
+  console.log('Consultas encontradas:', resultadosCons);
+});
+
+/* USUÁRIO LOGADO */
+const user = JSON.parse(localStorage.getItem("usuario_logado"));
+if (user) {
+  document.getElementById('headerNome').textContent = user.nome;
+  const iniciais = user.nome.split(" ").map(p => p[0]).join("").toUpperCase();
+  document.getElementById("avatar").textContent = iniciais;
+}
+
+/* INICIALIZAÇÃO */
+atualizarCards();
+criarGraficoSemana();
+renderProximasConsultas();
+renderAtividades();
+</script>
+
+</body>
+</html>

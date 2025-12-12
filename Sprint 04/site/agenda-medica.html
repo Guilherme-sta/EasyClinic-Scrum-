@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EasyClinic — Agenda Médica</title>
+<script>
+  const usuarioLogado = localStorage.getItem("usuario_logado");
+  if (!usuarioLogado) {
+    window.location.href = "login.html";
+  }
+</script>
+
+<style>
+:root{
+  --bg:#f6f8fb; --card:#ffffff; --muted:#69707a;
+  --accent:#4f46e5; --accent-2:#06b6d4;
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px; --max-width:1200px;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+}
+*{box-sizing:border-box}
+body,html{margin:0;background:var(--bg);height:100%}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;background:white;border-right:1px solid #e6eef6;
+  padding:20px;display:flex;flex-direction:column;gap:14px;
+  transition:.25s ease;
+}
+.sidebar.collapsed{width:72px;padding-left:10px;padding-right:10px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;font-weight:700;display:flex;align-items:center;justify-content:center}
+.brand{display:flex;gap:12px;align-items:center;font-weight:700}
+.titles{display:flex;flex-direction:column}
+.small{font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.nav a{
+  display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;
+  font-weight:600;text-decoration:none;color:#0f172a;
+}
+.nav a:hover{background:#f1f5f9}
+.nav .active{
+  background:linear-gradient(90deg,rgba(79,70,229,0.12),rgba(6,182,212,0.06));
+  box-shadow:var(--shadow);
+}
+.sidebar.collapsed .titles,
+.sidebar.collapsed .text,
+.sidebar.collapsed .sidebar-footer{display:none}
+.sidebar-footer{margin-top:auto;font-size:12px;color:var(--muted);text-align:center}
+
+/* HEADER */
+.main{flex:1;display:flex;flex-direction:column}
+header{
+  height:72px;display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;border-bottom:1px solid rgba(0,0,0,.05);position:relative;
+}
+.icon-btn{
+  width:40px;height:40px;border-radius:10px;background:white;
+  border:1px solid #e6eef6;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:18px;
+}
+.icon-btn:hover{background:#eef2ff}
+.search input{
+  padding:10px 12px;border-radius:10px;border:1px solid #e6eef6;
+  background:white;min-width:260px;
+}
+.avatar{
+  width:40px;height:40px;border-radius:999px;background:#c7d2fe;
+  display:flex;align-items:center;justify-content:center;font-weight:700;color:#1e293b;cursor:pointer;
+}
+
+/* NOTIF POPUP */
+.notif-popup{
+  position:absolute;top:74px;right:28px;width:300px;background:white;
+  border-radius:12px;box-shadow:var(--shadow);padding:12px;display:none;z-index:50;
+}
+.notif-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px;border:1px solid #eef3fb;background:white;
+  margin-bottom:8px;border-radius:10px;
+}
+.meta{font-size:12px;color:var(--muted)}
+
+/* CONTENT */
+.content{padding:28px;max-width:var(--max-width);margin:0 auto}
+.box{background:white;padding:18px;border-radius:12px;box-shadow:var(--shadow); overflow-x: auto;}
+
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px; min-width: 800px;}
+th,td{padding:12px;border:1px solid #eef3fb;text-align:center; vertical-align: top;}
+th{background-color: #f8fafc;}
+
+/* ESTILOS DOS CARDS DE CONSULTA NA AGENDA */
+.agenda-card {
+  background: #f1f5f9;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+  text-align: left;
+  font-size: 13px;
+}
+.agenda-card strong { display: block; color: #0f172a; margin-bottom: 2px;}
+.agenda-card span { display: block; color: var(--muted); font-size: 11px;}
+.agenda-card .status-tag {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.tag-Aguardando { background: #fef3c7; color: #d97706; }
+.tag-Confirmado { background: #dbeafe; color: #2563eb; }
+.tag-Finalizado { background: #f3f4f6; color: #4b5563; }
+
+.livre { color: #cbd5e1; font-style: italic; font-size: 12px; }
+
+.date-header { font-size: 12px; color: var(--muted); font-weight: normal; display: block; margin-top: 4px;}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="sidebar">
+  <div class="brand">
+    <div class="logo">EC</div>
+    <div class="titles"><div>EasyClinic</div><div class="small">Painel Administrativo</div></div>
+  </div>
+
+ <nav class="nav">
+    <a href="index.html" >
+        <span class="icon"><img src="icons/home.svg" width="20" height="20"></span>
+        <span class="text">Início</span>
+    </a>
+
+    <a href="pacientes.html">
+        <span class="icon"><img src="icons/mask.svg" width="20" height="20"></span>
+        <span class="text">Pacientes</span>
+    </a>
+
+    <a href="consultas.html">
+        <span class="icon"><img src="icons/clipboard.svg" width="20" height="20"></span>
+        <span class="text">Consultas</span>
+    </a>
+
+    <a href="agenda-medica.html" class="active">
+        <span class="icon"><img src="icons/calendar.svg" width="20" height="20"></span>
+        <span class="text">Agenda Médica</span>
+    </a>
+
+    <a href="gerenciar-usuarios.html">
+        <span class="icon"><img src="icons/user.svg" width="20" height="20"></span>
+        <span class="text">Usuários</span>
+    </a>
+
+    <a href="relatorios.html">
+        <span class="icon"><img src="icons/chart.svg" width="20" height="20"></span>
+        <span class="text">Relatórios</span>
+    </a>
+
+    <a href="configuracoes.html">
+        <span class="icon"><img src="icons/settings.svg" width="20" height="20"></span>
+        <span class="text">Configurações</span>
+    </a>
+</nav>
+
+
+  <div class="sidebar-footer">Versão 1.0</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+<header>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div id="btnToggle" class="icon-btn">
+    <img src="icons/menu.svg" width="20" height="20" style="vertical-align:middle;">
+</div>
+
+  </div>
+
+  <div style="display:flex;align-items:center;gap:16px;position:relative;">
+    <div id="btnNotif" class="icon-btn">
+          <img src="icons/bell.svg" width="20" height="20" alt="Notificações">
+          </div>
+
+    <div id="notifPopup" class="notif-popup">
+      <h4>Notificações</h4>
+      <div style="text-align:center;margin-top:8px"><button id="btnClearNotif" class="btn-ghost">Marcar todas como lidas</button></div>
+    </div>
+
+    <div style="text-align:right">
+      <div style="font-size:13px;color:var(--muted)">Olá,</div>
+      <div style="font-weight:700">Maria Silva</div>
+    </div>
+
+    <div id="avatar" class="avatar">MS</div>
+  </div>
+</header>
+
+<main class="content">
+  <h2>Agenda Médica</h2>
+  <p style="color:var(--muted); font-size:14px; margin-bottom: 20px;">Visualização da <strong>semana atual</strong>. Adicione consultas na aba "Consultas".</p>
+
+  <div style="margin:12px 0; display:flex; gap:12px; align-items:center;">
+    <div>
+      <label style="font-size:14px;color:var(--muted)">Filtrar por Médico:</label><br>
+      <select id="filtroMedico" style="padding:8px;border-radius:10px;border:1px solid #dce3ed; min-width: 200px;">
+        <option value="">Todos os médicos</option>
+      </select>
+    </div>
+    
+    <div style="margin-left: auto;">
+       <button onclick="renderAgenda()" style="padding:8px 12px; border-radius:8px; border:1px solid #dce3ed; background:white; cursor:pointer;">
+    <img src="icons/update.svg" width="16" height="16" style="vertical-align:middle; margin-right:4px;">
+    Atualizar
+</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <table id="tabelaAgenda">
+      <thead>
+        <tr id="headerRow">
+          <th style="width:80px;">Horário</th>
+          <th>Segunda <span class="date-header" id="date-0"></span></th>
+          <th>Terça <span class="date-header" id="date-1"></span></th>
+          <th>Quarta <span class="date-header" id="date-2"></span></th>
+          <th>Quinta <span class="date-header" id="date-3"></span></th>
+          <th>Sexta <span class="date-header" id="date-4"></span></th>
+        </tr>
+      </thead>
+      <tbody id="agendaBody"></tbody>
+    </table>
+  </div>
+
+</main>
+</div>
+</div>
+
+<script>
+/* LAYOUT E MENU */
+const sidebar = document.getElementById('sidebar');
+const btnToggle = document.getElementById('btnToggle');
+btnToggle.onclick = () => sidebar.classList.toggle('collapsed');
+
+const btnNotif = document.getElementById('btnNotif');
+const notifPopup = document.getElementById('notifPopup');
+btnNotif.onclick = e=>{ e.stopPropagation(); notifPopup.style.display = notifPopup.style.display === "block" ? "none" : "block"; };
+document.addEventListener('click', e=>{ if(!notifPopup.contains(e.target) && e.target !== btnNotif) notifPopup.style.display = "none"; });
+document.getElementById('avatar').onclick = ()=>location.href="configuracoes.html";
+
+/* LÓGICA DA AGENDA INTEGRADA */
+
+// 1. Carregar Médicos do Banco de Dados para o Filtro
+function carregarFiltroMedicos(){
+  const usuarios = JSON.parse(localStorage.getItem('db_usuarios') || "[]");
+  const medicos = usuarios.filter(u => u.tipo === 'Médico');
+  const select = document.getElementById('filtroMedico');
+  
+  select.innerHTML = '<option value="">Todos os médicos</option>';
+  medicos.forEach(m => {
+    const o = document.createElement("option");
+    o.value = m.nome;
+    o.textContent = m.nome;
+    select.appendChild(o);
+  });
+}
+
+// 2. Calcular datas da semana atual (Segunda a Sexta)
+function getDatesOfWeek() {
+  const current = new Date();
+  // Ajusta para o dia da semana atual (0=Dom, 1=Seg...)
+  const day = current.getDay();
+  // Calcula a diferença para chegar na Segunda-feira (1)
+  // Se for Domingo (0), volta 6 dias. Se for Segunda (1), volta 0.
+  const diff = current.getDate() - day + (day === 0 ? -6 : 1); 
+  
+  const monday = new Date(current.setDate(diff));
+  const dates = [];
+
+  for (let i = 0; i < 5; i++) {
+    const nextDate = new Date(monday);
+    nextDate.setDate(monday.getDate() + i);
+    dates.push(nextDate.toISOString().split('T')[0]); // Formato YYYY-MM-DD
+  }
+  return dates;
+}
+
+// 3. Renderizar Agenda
+function renderAgenda(){
+  const agendaBody = document.getElementById("agendaBody");
+  const consultas = JSON.parse(localStorage.getItem("consultas") || "[]");
+  const medicoSelecionado = document.getElementById("filtroMedico").value;
+  
+  const weekDates = getDatesOfWeek();
+  const horarios = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+
+  // Atualiza cabeçalho com as datas
+  weekDates.forEach((dateStr, index) => {
+    const [ano, mes, dia] = dateStr.split('-');
+    document.getElementById(`date-${index}`).textContent = `${dia}/${mes}`;
+  });
+
+  agendaBody.innerHTML = "";
+
+  horarios.forEach(hora => {
+    const tr = document.createElement("tr");
+    
+    // Coluna Horário
+    tr.innerHTML += `<td><strong>${hora}</strong></td>`;
+
+    // Colunas Dias (Seg-Sex)
+    weekDates.forEach(dateStr => {
+      const td = document.createElement("td");
+      
+      // Filtra consultas que batem com Data e Hora
+      let consultasDoSlot = consultas.filter(c => c.data === dateStr && c.hora === hora);
+
+      // Aplica filtro de médico se houver
+      if(medicoSelecionado){
+        consultasDoSlot = consultasDoSlot.filter(c => c.medico === medicoSelecionado);
+      }
+
+      if(consultasDoSlot.length > 0){
+        // Exibe card(s)
+        consultasDoSlot.forEach(c => {
+          const statusClass = c.status ? `tag-${c.status}` : 'tag-Aguardando';
+          const statusText = c.status || 'Aguardando';
+          
+          td.innerHTML += `
+            <div class="agenda-card">
+              <strong>${c.paciente}</strong>
+              <span>${c.medico}</span>
+              <span class="status-tag ${statusClass}">${statusText}</span>
+            </div>
+          `;
+        });
+      } else {
+        td.innerHTML = `<span class="livre">Livre</span>`;
+      }
+
+      tr.appendChild(td);
+    });
+
+    agendaBody.appendChild(tr);
+  });
+}
+
+// Inicialização
+carregarFiltroMedicos();
+renderAgenda();
+
+// Eventos
+document.getElementById('filtroMedico').onchange = renderAgenda;
+
+// Login Dinâmico Header
+const user = JSON.parse(localStorage.getItem("usuario_logado"));
+if (user) {
+  document.querySelector("header div div[style*='font-weight']").textContent = user.nome;
+  const iniciais = user.nome.split(" ").map(p=>p[0]).join("").toUpperCase();
+  document.getElementById("avatar").textContent = iniciais;
+}
+</script>    
+</body>
+</html>
